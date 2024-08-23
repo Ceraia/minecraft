@@ -32,7 +32,8 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    //implementation("org.incendo:cloud-paper:2.0.0-beta.8")
+    implementation("org.incendo:cloud-paper:2.0.0-beta.8")
+    implementation("org.incendo.interfaces:interfaces-{package}:1.0.0-SNAPSHOT")
 }
 
 val targetJavaVersion = 21
