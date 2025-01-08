@@ -46,23 +46,22 @@ public class ArenaSelectGUI implements Listener {
         int size = Math.max(9, (arenas.size() + 8) / 9 * 9);
 
         // Create the inventory
-        Inventory inv = Bukkit.createInventory(null, size, MiniMessage.miniMessage().deserialize(Objects.requireNonNull(plugin.getConfig().getString("messages.arena_select_gui.inventory_name"))));
+        Inventory inv = Bukkit.createInventory(null, size, MiniMessage.miniMessage().deserialize("Quick Text Arena Title"));
 
         // Create a map of the slot and the arena
         Map<Integer, Arena> arenasSelectSlots = new HashMap<>();
 
         int i = 0; // Slot
         for (Arena a : arenas.stream().filter(a -> a.getState() == Arena.ArenaState.WAITING).toList()) { // Filter out arenas that are not ready
-            ItemStack itemStack = new ItemStack(Objects.requireNonNull(Material.getMaterial(
-                    Objects.requireNonNull(plugin.getConfig().getString("messages.arena_select_gui.arena_item.item"))
-            ))); // Create the itemstack
+            ItemStack itemStack = new ItemStack(
+                   Material.ARROW
+            ); // Create the itemstack
             ItemMeta meta = itemStack.getItemMeta();
             meta.displayName(
-                    MiniMessage.miniMessage().deserialize(
-                    Objects.requireNonNull(plugin.getConfig().getString("messages.arena_select_gui.arena_item.name"))
-                    .replace("%arena_name%", a.getName())
-                    .replace("%arena_owner%", a.getOwner())
-                    )
+                    MiniMessage.miniMessage().deserialize(Objects.requireNonNull(plugin.getConfig().getString("messages.arena_select_gui.arena_item.name"))
+                            .replace("%arena_name%", a.getName())
+                            .replace("%arena_owner%", a.getOwner())
+                            .replace("%totems%", a.totems ? "<green>enabled</green>" : "<red>disabled</red>"))
             );
 
             List<Component> lore = new ArrayList<>();

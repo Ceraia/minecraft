@@ -35,7 +35,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.incendo:cloud-paper:2.0.0-beta.8")
-    implementation("dev.triumphteam:triumph-gui:3.1.10")
+    implementation("dev.triumphteam:triumph-gui:3.1.11")
     implementation("com.mojang:brigadier:1.0.18")
 }
 

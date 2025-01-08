@@ -29,7 +29,7 @@ public class CommandArena implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if(!sender.hasPermission("xdbl.arena")){
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.no_permission")));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>You do not have permission to use this command."));
             return true;
         }
 
@@ -143,19 +143,19 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         Arena arena = plugin.getArenaModule().getArenaManager().getArena(name);
         if (arena == null) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_found"))
+                    MiniMessage.miniMessage().deserialize("<red>That arena does not exist.")
             );
             return;
         }
         if (!Objects.equals(arena.getOwner(), sender.getName())) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_yours"))
+                    MiniMessage.miniMessage().deserialize("<red>You do not own that arena.")
             );
             return;
         }
         arena.setSpawnPoint1(((Player) sender).getLocation());
         sender.sendMessage(
-                MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.sp1.success"))
+                MiniMessage.miniMessage().deserialize("<green>Successfully set the first spawn point for the arena.")
         );
     }
 
@@ -170,20 +170,20 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         Arena arena = plugin.getArenaModule().getArenaManager().getArena(name);
         if (arena == null) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_found"))
+                    MiniMessage.miniMessage().deserialize("<red>That arena does not exist.")
             );
             return;
         }
 
         if (!Objects.equals(arena.getOwner(), sender.getName())) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_yours"))
+                    MiniMessage.miniMessage().deserialize("<red>You do not own that arena.")
             );
             return;
         }
         arena.setSpawnPoint2(((Player) sender).getLocation());
         sender.sendMessage(
-                MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.sp2.success"))
+                MiniMessage.miniMessage().deserialize("<green>Successfully set the second spawn point for the arena.")
         );
     }
 
@@ -198,14 +198,14 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         // Check if the string is the same as <name>, if so state the user should put a name
         if (name.equalsIgnoreCase("<name>")) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.create.no_name"))
+                    MiniMessage.miniMessage().deserialize("<red>Please specify a name for the arena.")
             );
             return;
         }
         // Check if the string is alphanumeric
         if (!name.matches("[a-zA-Z0-9]*")) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.create.alphanumeric"))
+                    MiniMessage.miniMessage().deserialize("<red>Invalid characters in the arena name.")
             );
             return;
         }
@@ -213,7 +213,7 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         // Check if the arena already exists
         if (plugin.getArenaModule().getArenaManager().getArenas().stream().filter(a -> a.getName().equalsIgnoreCase(name)).count() > 0) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.create.exists"))
+                    MiniMessage.miniMessage().deserialize("<red>An arena with that name already exists.")
             );
             return;
         }
@@ -228,7 +228,7 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         plugin.getArenaModule().getArenaManager().addArena(arena);
 
         sender.sendMessage(
-                MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.create.success"))
+                MiniMessage.miniMessage().deserialize("<green>Successfully created the arena.")
         );
     }
 
@@ -242,19 +242,19 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         Arena arena = plugin.getArenaModule().getArenaManager().getArena(name);
         if (arena == null) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_found"))
+                    MiniMessage.miniMessage().deserialize("<red>That arena does not exist.")
             );
             return;
         }
         if (!arena.getOwner().equals(sender.getName())) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_yours"))
+                    MiniMessage.miniMessage().deserialize("<red>You do not own that arena.")
             );
             return;
         }
         if (arena.getState() != Arena.ArenaState.WAITING) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.delete.running"))
+                    MiniMessage.miniMessage().deserialize("<red>You cannot delete an arena that is in use.")
             );
             return;
         }
@@ -263,7 +263,7 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         plugin.getArenaModule().getArenaManager().removeArena(arena);
 
         sender.sendMessage(
-                MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.delete.delete"))
+                MiniMessage.miniMessage().deserialize("<green>Successfully deleted the arena.")
         );
     }
 
@@ -277,13 +277,13 @@ public class CommandArena implements CommandExecutor, TabCompleter {
         Arena arena = plugin.getArenaModule().getArenaManager().getArena(name);
         if (arena == null) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_found"))
+                    MiniMessage.miniMessage().deserialize("<red>That arena does not exist.")
             );
             return;
         }
         if (!arena.getOwner().equals(sender.getName())) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.not_yours"))
+                    MiniMessage.miniMessage().deserialize("<red>You do not own that arena.")
             );
             return;
         }
@@ -292,11 +292,11 @@ public class CommandArena implements CommandExecutor, TabCompleter {
 
         if (isPublic) {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.public_command.success_private"))
+                    MiniMessage.miniMessage().deserialize("<green>Successfully set the arena to private.")
             );
         } else {
             sender.sendMessage(
-                    MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.arena.public_command.success_public"))
+                    MiniMessage.miniMessage().deserialize("<green>Successfully set the arena to public.")
             );
         }
 
@@ -304,7 +304,7 @@ public class CommandArena implements CommandExecutor, TabCompleter {
     }
 
     private void badUsage(CommandSender sender) {
-        sender.sendMessage(MiniMessage.miniMessage().deserialize(plugin.getConfig().getString("messages.bad_usage")));
+        sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Invalid usage. Please use /arena help for more information."));
     }
 
     private void arenaList(CommandSender sender) {
@@ -322,8 +322,14 @@ public class CommandArena implements CommandExecutor, TabCompleter {
     }
 
     private void arenaHelp(CommandSender sender) {
-        plugin.getConfig().getStringList("messages.arena.help").forEach(s -> {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(s));
-        });
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>--- <gold>Help <gray>---"));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena list <dark_gray>- <gray>Lists all of your arenas."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena create <name> <dark_gray>- <gray>Creates an arena with the specified name."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena delete <name> <dark_gray>- <gray>Deletes the specified arena."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena sp1 <name> <dark_gray>- <gray>Sets the first spawn point for the specified arena."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena sp2 <name> <dark_gray>- <gray>Sets the second spawn point for the specified arena."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena public <name> <dark_gray>- <gray>Sets the specified arena to public or private."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena top <dark_gray>- <gray>Shows the top 10 players with the highest elo."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>/arena scoreboard <dark_gray>- <gray>Shows the top 10 players with the highest elo."));
     }
 }
