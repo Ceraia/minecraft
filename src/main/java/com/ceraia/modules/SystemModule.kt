@@ -1,4 +1,4 @@
-package com.ceraia.modules.system
+package com.ceraia.modules
 
 import com.ceraia.Ceraia
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.util.StringUtil
 
-class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, Listener {
+class SystemModule(private val plugin: Ceraia) : CommandExecutor, TabCompleter, Listener {
 
     init {
         // Register the commands
@@ -39,14 +39,14 @@ class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, 
             "version" -> {
                 sender.sendMessage(
                     MiniMessage.miniMessage().deserialize(
-                        "<green>Running <white>Ceraia <green>v${plugin.pluginMeta.version} <green>by <white>Axodouble"
+                        "<green>Running <white>Ceraia <green>v${plugin.pluginMeta.version} <green>by <white>Axoceraia"
                     )
                 )
                 return true
             }
             "day", "noon" -> {
-                if (!sender.hasPermission("double.time.day") &&
-                    !sender.hasPermission("double.time.*")
+                if (!sender.hasPermission("ceraia.time.day") &&
+                    !sender.hasPermission("ceraia.time.*")
                 ) {
                     plugin.noPermission(sender as Player)
                     return true
@@ -60,8 +60,8 @@ class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, 
                 return true
             }
             "night" -> {
-                if (!sender.hasPermission("double.time.night") &&
-                    !sender.hasPermission("double.time.*")
+                if (!sender.hasPermission("ceraia.time.night") &&
+                    !sender.hasPermission("ceraia.time.*")
                 ) {
                     plugin.noPermission(sender as Player)
                     return true
@@ -72,7 +72,7 @@ class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, 
                 return true
             }
             "discord" -> {
-                if (!sender.hasPermission("double.discord")) {
+                if (!sender.hasPermission("ceraia.discord")) {
                     plugin.noPermission(sender as Player)
                     return true
                 }
@@ -104,7 +104,7 @@ class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, 
     }
 
     private fun jump(player: Player) {
-        if (!player.hasPermission("double.jump")) {
+        if (!player.hasPermission("ceraia.jump")) {
             plugin.noPermission(player)
             return
         }
@@ -125,19 +125,5 @@ class ModuleSystem(private val plugin: Ceraia) : CommandExecutor, TabCompleter, 
                 player.teleport(highestBlock.location.add(0.5, 1.0, 0.5))
             }
         }
-    }
-
-    private fun modHelp(sender: CommandSender) {
-        sender.sendMessage(
-            MiniMessage.miniMessage().deserialize(
-                """
-                    <yellow><bold>Mod Help
-                    <gray>/mod ban pvp <player>
-                    <gray>/mod ban arenas <player>
-                    <gray>/mod remove pvp <player>
-                    <gray>/mod remove arenas <player>
-                """.trimIndent()
-            )
-        )
     }
 }

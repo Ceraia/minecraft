@@ -15,16 +15,19 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.util.StringUtil
+import kotlin.math.cos
+import kotlin.math.sin
 
-class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter, Listener {
+class MarriageModule(private val plugin: Ceraia) : CommandExecutor, TabCompleter, Listener {
 
-    private val invites: MutableMap<Player, Player> = mutableMapOf()
+    private val proposals: MutableMap<Player, Player> = mutableMapOf()
+    // First is parent of the request, second is the child
+    private val adoptionRequests: MutableMap<Player, Player> = mutableMapOf()
 
     init {
         plugin.getCommand("marry")?.setExecutor(this)
         plugin.getCommand("divorce")?.setExecutor(this)
         plugin.getCommand("marry")?.tabCompleter = this
-
 
         Bukkit.getPluginManager().registerEvents(this, plugin)
     }
@@ -32,7 +35,7 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) return true
 
-        if (!sender.hasPermission("double.marry")) {
+        if (!sender.hasPermission("ceraia.marry")) {
             plugin.noPermission(sender)
             return true
         }
@@ -51,11 +54,61 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
                     return true
                 }
 
-                invite(sender, target)
+                propose(sender, target)
+            }
+            "adopt" -> {
+                if (args.isEmpty() || args.size < 2 || (args[0] != "parent" && args[0] != "kid")) {
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Usage: <white>/adopt <parent/kid> <player>"))
+                    return true
+                }
+
+                val target = plugin.server.getPlayer(args[1])
+
+                if (target == null) {
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Player not found"))
+                    return true
+                }
+
+                if(args[0] == "parent") adopt(sender, target) else adopt(target, sender)
             }
         }
 
         return true
+    }
+
+    private fun adopt(parent: Player, child: Player) {
+        if (adoptionRequests.containsKey(parent)) {
+            if (adoptionRequests[parent] == child) {
+                acceptAdoption(parent, child)
+                return
+            }
+        }
+
+        adoptionRequests[child] = parent
+        plugin.server.sendMessage(MiniMessage.miniMessage().deserialize(
+                "<green>${parent.name}<gray> has invited <green>${child.name}<gray> to adopt them!"
+        ))
+        child.sendMessage(MiniMessage.miniMessage().deserialize(
+                "<green>${parent.name}<gray> has invited you to adopt them! Click <hover:show_text:'Click to accept the adoption proposal.'><click:run_command:/adopt parent ${parent.name}>[<green>here<gray>]</click><gray> to accept."
+        ))
+    }
+
+    private fun acceptAdoption(parent: Player, child: Player) {
+        val parentCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(parent.uniqueId)
+        val childCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(child.uniqueId)
+
+        if (adoptionRequests[child] != parent) {
+            return
+        }
+
+        plugin.server.sendMessage(MiniMessage.miniMessage().deserialize(
+                "<green>${child.name}<gray> has accepted <green>${parent.name}<gray>'s adoption proposal!"
+        ))
+
+        childCeraiaPlayer.addParent(parent.name)
+        parentCeraiaPlayer.addChild(child.name)
+
+        adoptionRequests.remove(child)
     }
 
     override fun onTabComplete(sender: CommandSender, cmd: Command, label: String, args: Array<String>): List<String> {
@@ -71,7 +124,7 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
         return returnedOptions
     }
 
-    fun invite(sender: Player, target: Player) {
+    private fun propose(sender: Player, target: Player) {
         val senderCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(sender.uniqueId)
         val targetCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(target.uniqueId)
 
@@ -84,14 +137,14 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
             return
         }
 
-        if (invites.containsKey(sender)) {
-            if (invites[sender] == target) {
-                accept(sender, target)
+        if (proposals.containsKey(sender)) {
+            if (proposals[sender] == target) {
+                acceptProposal(sender, target)
                 return
             }
         }
 
-        invites[target] = sender
+        proposals[target] = sender
         plugin.server.sendMessage(MiniMessage.miniMessage().deserialize(
                 "<green>${sender.name}<gray> has invited <green>${target.name}<gray> to marry them!"
         ))
@@ -100,7 +153,7 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
         ))
     }
 
-    fun accept(target: Player, sender: Player) {
+    private fun acceptProposal(target: Player, sender: Player) {
         val senderCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(sender.uniqueId)
         val targetCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(target.uniqueId)
 
@@ -114,7 +167,7 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
             target.sendMessage(MiniMessage.miniMessage().deserialize("<red>You are already married!"))
             return
         }
-        if (invites[target] != sender) {
+        if (proposals[target] != sender) {
             return
         }
 
@@ -124,45 +177,24 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
 
         targetCeraiaPlayer.marry(sender.name)
         senderCeraiaPlayer.marry(target.name)
-        invites.remove(target)
+        proposals.remove(target)
     }
 
-    fun decline(target: Player, sender: Player): Int {
-        val senderCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(sender.uniqueId)
-        val targetCeraiaPlayer = plugin.playerManager.getCeraiaPlayer(target.uniqueId)
+    private fun divorce(player: Player) {
+        val ceraiaPlayer = plugin.playerManager.getCeraiaPlayer(player.uniqueId)
+        val ceraiaPartner = plugin.playerManager.getCeraiaPlayer(ceraiaPlayer.getPartner() ?: return)
 
-        if (senderCeraiaPlayer.isMarried()) {
-            return 1
-        }
-        if (targetCeraiaPlayer.isMarried()) {
-            return 2
-        }
-        if (invites[target] != sender) {
-            return 3
-        }
+        ceraiaPlayer.divorce()
+        ceraiaPartner.divorce()
 
         plugin.server.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>${target.name}<gray> has declined <green>${sender.name}<gray>'s marriage proposal!"
-        ))
-        invites.remove(target)
-        return 4
-    }
-
-    fun divorce(player: Player) {
-        val doublePlayer = plugin.playerManager.getCeraiaPlayer(player.uniqueId)
-        val doublePartner = plugin.playerManager.getCeraiaPlayer(doublePlayer.getPartner() ?: return)
-
-        doublePlayer.divorce()
-        doublePartner.divorce()
-
-        plugin.server.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>${player.name} has divorced ${doublePartner.name}."
+                "<green>${player.name} has divorced ${ceraiaPartner.name}."
         ))
     }
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        invites.remove(event.player)
+        proposals.remove(event.player)
     }
 
     @EventHandler
@@ -170,8 +202,8 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
         val rightClicked = event.rightClicked as? Player ?: return
         if (event.player.uniqueId == rightClicked.uniqueId || !event.player.isSneaking) return
 
-                val doublePlayer = plugin.playerManager.getCeraiaPlayer(event.player.uniqueId)
-        if (doublePlayer.isMarried() && rightClicked.name == doublePlayer.getMarriedName()) {
+        val ceraiaPlayer = plugin.playerManager.getCeraiaPlayer(event.player.uniqueId)
+        if (ceraiaPlayer.isMarried() && rightClicked.name == ceraiaPlayer.getMarriedName()) {
             // Spawn a bunch of hearts
             spawnHeartsAroundPlayer(rightClicked)
             spawnHeartsAroundPlayer(event.player)
@@ -186,16 +218,12 @@ class ModuleMarriage(private val plugin: Ceraia) : CommandExecutor, TabCompleter
         repeat(heartsToSpawn) {
             val angle = Math.random() * Math.PI * 2
             val radius = 0.5
-            val x = playerLocation.x + Math.cos(angle) * radius
+            val x = playerLocation.x + cos(angle) * radius
             val y = playerLocation.y + (Math.random() * 0.3) + 1.5
-            val z = playerLocation.z + Math.sin(angle) * radius
+            val z = playerLocation.z + sin(angle) * radius
 
             val particleLocation = Location(world, x, y, z)
             world.spawnParticle(Particle.HEART, particleLocation, 1)
         }
-    }
-
-    fun getRequests(player: Player): Collection<String> {
-        return invites.filter { it.value == player }.keys.map { it.name }
     }
 }

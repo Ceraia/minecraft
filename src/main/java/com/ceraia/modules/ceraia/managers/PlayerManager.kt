@@ -1,7 +1,7 @@
-package com.ceraia.managers
+package com.ceraia.modules.ceraia.managers
 
 import com.ceraia.Ceraia
-import com.ceraia.types.CeraiaPlayer
+import com.ceraia.modules.ceraia.types.CeraiaPlayer
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -11,7 +11,7 @@ import java.io.IOException
 import java.util.*
 
 class PlayerManager(private val plugin: Ceraia) {
-    val doublePlayers: MutableList<CeraiaPlayer> = mutableListOf()
+    val ceraiaPlayers: MutableList<CeraiaPlayer> = mutableListOf()
 
     init {
         // Load arenaPlayers
@@ -27,7 +27,7 @@ class PlayerManager(private val plugin: Ceraia) {
 
             }
 
-            val doublePlayer = CeraiaPlayer(
+            val ceraiaPlayer = CeraiaPlayer(
                     plugin,
                     config.getString("name") ?: throw IllegalArgumentException("Name cannot be null"),
                     config.getString("race", "human").toString(),
@@ -39,27 +39,29 @@ class PlayerManager(private val plugin: Ceraia) {
                     config.getBoolean("pvpbanned", false),
                     config.getInt("wins", 0),
                     config.getInt("losses", 0),
+                    config.getStringList("parents"),
+                    config.getStringList("children"),
                     file
             )
-            doublePlayers.add(doublePlayer)
+            ceraiaPlayers.add(ceraiaPlayer)
         }
     }
 
     fun getCeraiaPlayer(playerUUID: UUID): CeraiaPlayer {
-        return doublePlayers.find { it.uuid == playerUUID } ?: createNewCeraiaPlayer(playerUUID).also {
-            doublePlayers.add(it)
+        return ceraiaPlayers.find { it.uuid == playerUUID } ?: createNewCeraiaPlayer(playerUUID).also {
+            ceraiaPlayers.add(it)
         }
     }
 
     fun getCeraiaPlayer(playerName: String): CeraiaPlayer {
-        return doublePlayers.find { it.name == playerName }
+        return ceraiaPlayers.find { it.name == playerName }
             ?: createNewCeraiaPlayer(Bukkit.getPlayer(playerName)?.uniqueId ?: throw IllegalArgumentException("Player not found"))
-                .also { doublePlayers.add(it) }
+                .also { ceraiaPlayers.add(it) }
     }
 
     fun getCeraiaPlayer(player: Player): CeraiaPlayer {
-        return doublePlayers.find { it.uuid == player.uniqueId } ?: createNewCeraiaPlayer(player.uniqueId).also {
-            doublePlayers.add(it)
+        return ceraiaPlayers.find { it.uuid == player.uniqueId } ?: createNewCeraiaPlayer(player.uniqueId).also {
+            ceraiaPlayers.add(it)
         }
     }
 
@@ -84,6 +86,8 @@ class PlayerManager(private val plugin: Ceraia) {
                 set("wins", 0)
                 set("losses", 0)
                 set("logs", mutableListOf<String>())
+                set("parents", mutableListOf<String>())
+                set("children", mutableListOf<String>())
             }
             config.save(configFile)
 
@@ -99,6 +103,8 @@ class PlayerManager(private val plugin: Ceraia) {
                     false,
                     0,
                     0,
+                     mutableListOf(),
+                        mutableListOf(),
                     configFile
             )
         } catch (e: IOException) {
@@ -115,21 +121,23 @@ class PlayerManager(private val plugin: Ceraia) {
                     false,
                     0,
                     0,
+                    mutableListOf(),
+                    mutableListOf(),
                     configFile
             )
         }
     }
 
     fun getPlayer(uniqueId: UUID): CeraiaPlayer? {
-        return doublePlayers.find { it.uuid == uniqueId }
+        return ceraiaPlayers.find { it.uuid == uniqueId }
     }
 
     fun getPlayer(name: String): CeraiaPlayer? {
-        return doublePlayers.find { it.name.equals(name, ignoreCase = true) }
+        return ceraiaPlayers.find { it.name.equals(name, ignoreCase = true) }
     }
 
     fun savePlayers() {
         plugin.logger.info("Saving players...")
-        doublePlayers.forEach { it.savePlayer() }
+        ceraiaPlayers.forEach { it.savePlayer() }
     }
 }

@@ -6,6 +6,26 @@ description: Ceraia, the utility plugin.
 author: Axodouble
 website: https://github.com/Ceraia/Minecraft
 commands:
+  pvp:
+    description: All pvp related commands.
+    usage: /pvp
+  arena:
+    description: All arena related commands.
+    usage: /arena
+  gvg:
+    description: All gvg related commands.
+    usage: /gvg
+  leaderboard:
+    description: All leaderboard related commands.
+    usage: /leaderboard
+    aliases:
+      - top
+  profile:
+    description: All profile related commands.
+    usage: /profile
+  stats:
+    description: All stats related commands.
+    usage: /stats
   version:
     description: Show the version of the plugin.
     usage: /version
@@ -38,44 +58,44 @@ commands:
     description: A command to change your race
     usage: /race
 permissions :
-  double.discord:
+  ceraia.discord:
     description: "Access to the /discord command that is set in the config.yml"
     default: true
-  double.time:
+  ceraia.time:
     description: "Access to the /day and /night commands"
     default: op
     children:
-      double.time.day:
+      ceraia.time.day:
         description: "Access to the /day command"
         default: op
-      double.time.night:
+      ceraia.time.night:
         description: "Access to the /night command"
         default: op
-      double.time.*:
+      ceraia.time.*:
         description: "Access to all time commands"
         default: op
-  double.sit:
+  ceraia.sit:
     description: "Access to the /sit command and to sit on blocks"
     default: true
-  double.marry:
+  ceraia.marry:
     description: "Access to the /marry command"
     default: true
-  double.jump:
+  ceraia.jump:
     description: "Access to the /jump command"
     default: op
-  double.races:
+  ceraia.races:
     description: "Access to the /race command"
     default: true
     children:
-      double.races.become:
+      ceraia.races.become:
         description: "Access to become a race with /race become <race>"
         default: true
-      double.races.become.*:
+      ceraia.races.become.*:
         description: "Access to specific races"
         default: true
-      double.races.reload:
+      ceraia.races.reload:
         description: "Access to reload the races"
         default: op
-      double.races.restore:
+      ceraia.races.restore:
         description: "Access to restore all races"
         default: op

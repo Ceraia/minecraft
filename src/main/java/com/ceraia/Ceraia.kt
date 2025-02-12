@@ -1,27 +1,32 @@
 package com.ceraia
 
-import com.ceraia.managers.PlayerManager
+import com.ceraia.modules.ceraia.managers.PlayerManager
+import com.ceraia.metrics.Metrics
 import com.ceraia.modules.*
 import com.ceraia.modules.arenas.ArenaModule
-import com.ceraia.modules.races.ModuleRaces
-import com.ceraia.modules.system.ModuleSystem
+import com.ceraia.modules.RaceModule
+import com.ceraia.modules.SystemModule
 import com.ceraia.util.ConfigHelper
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
+import java.util.UUID
 
 class Ceraia : JavaPlugin() {
     private val plugin: Ceraia = this
+
+    var metrics: Metrics? = null
+
     lateinit var playerManager: PlayerManager
         private set
-    lateinit var moduleSeating: ModuleSeating
+    lateinit var seatingModule: SeatingModule
         private set
-    lateinit var moduleMarriage: ModuleMarriage
+    lateinit var marriageModule: MarriageModule
         private set
-    lateinit var moduleSystem: ModuleSystem
+    lateinit var systemModule: SystemModule
         private set
-    lateinit var moduleRaces: ModuleRaces
+    lateinit var raceModule: RaceModule
         private set
     lateinit var configHelper: ConfigHelper
         private set
@@ -29,10 +34,11 @@ class Ceraia : JavaPlugin() {
         private set
 
     override fun onEnable() {
+        metrics = Metrics(this, 20303)
+
         saveDefaultConfig()
+
         File(dataFolder, "data").mkdirs()
-        File(dataFolder, "data/arenas").mkdirs()
-        File(dataFolder, "data/items").mkdirs()
         File(dataFolder, "data/users").mkdirs()
 
         /*---------------------------------*/
@@ -43,10 +49,10 @@ class Ceraia : JavaPlugin() {
         /*---------------------------------*/
         /*             Modules             */
         /*---------------------------------*/
-        moduleSeating = ModuleSeating(plugin)
-        moduleMarriage = ModuleMarriage(plugin)
-        moduleSystem = ModuleSystem(plugin)
-        moduleRaces = ModuleRaces(plugin)
+        seatingModule = SeatingModule(plugin)
+        marriageModule = MarriageModule(plugin)
+        systemModule = SystemModule(plugin)
+        raceModule = RaceModule(plugin)
         arenaModule = ArenaModule(plugin)
 
         /*---------------------------------*/
@@ -57,6 +63,7 @@ class Ceraia : JavaPlugin() {
 
     override fun onDisable() {
         playerManager.savePlayers()
+        metrics?.shutdown()
     }
 
     fun noPermission(player: Player) {
